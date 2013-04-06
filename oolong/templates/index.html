@@ -1,0 +1,49 @@
+<!DOCTYPE>
+<html>
+<head>
+  <title>MD5 Cracker</title>
+  <script src="js/md5.js"></script>
+  <script src="js/jquery-1.9.1.js"></script>
+</head>
+<body>
+  <input type="text" id="q" placeholder="md5 ciphertext" />
+  <button id="c" onclick="return false;">Crack</button>
+  <div id="result"></div>
+<script>
+(function() {
+  // QUERY
+  $("#c").click(function(event) {
+    var $q = $("#q")[0],
+      $result = $("#result")[0], 
+      ciph = $q.value;
+    $.get("/md5/" + ciph, function(result, textStatus) {
+      $result.innerHTML=result.co;
+    })
+    .fail(function() {
+      $result.innerHTML="ciphertext not found";
+    });
+    return false;
+  });
+  // CRACK
+  var crack = function() {
+    $.post("/md5/task", function(result) {
+      response = {
+        id: result.id,
+        b: []}
+      for(var i = 0; i < result.b.length; i++) {
+        var content = result.b[i].co,
+            ciphertext = CryptoJS.MD5(content).toLocaleString();
+        response.b.push({co:content,ci:ciphertext});
+      }
+      $.ajax({
+        type: "PUT",
+        url: "/md5/task/" + result.id,
+        contentType: "application/json",
+        data: JSON.stringify(response)});
+    });
+  }
+  setInterval(crack, 1000);
+})();
+</script>
+</body>
+</html>
