@@ -9,11 +9,11 @@ from flask import render_template
 import simplejson as json
 from uuid import uuid4 as uuidgen
 
+from gevent_sqlitedict import SqliteDict
+
 app = Flask(__name__)
 
-md5 = {
-    'zzz': 'only for test'
-}
+md5 = SqliteDict('database.db')
 
 def content_genterator(s):
     count = 1
@@ -34,8 +34,8 @@ content_maker = content_genterator(string.ascii_letters)
 def _post_md5_task():
     js = {
         'id': str(uuidgen()),
-        'b': [{'co': content_maker.next()}
-                 for _ in range(500)]}
+        'b': [content_maker.next()
+              for _ in range(100)]}
     return Response(json.dumps(js),
                     status=200,
                     mimetype='application/json')
@@ -43,7 +43,10 @@ def _post_md5_task():
 @app.route('/md5/task/<id>', methods=['PUT'])
 def _put_md5_task(id):
     data = json.loads(request.data)
-    [md5.update({d['ci']: d['co']}) for d in data['b']]
+    cache = {}
+    [cache.update({d[0]: d[1]}) for d in zip(data['b'][1::2], data['b'][::2])]
+    md5.update(cache)
+    md5.commit()
     return Response(status=204)
 
 @app.route('/md5/<ciph>', methods=['GET'])

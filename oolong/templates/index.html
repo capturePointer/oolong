@@ -31,9 +31,10 @@
         id: result.id,
         b: []}
       for(var i = 0; i < result.b.length; i++) {
-        var content = result.b[i].co,
+        var content = result.b[i],
             ciphertext = CryptoJS.MD5(content).toLocaleString();
-        response.b.push({co:content,ci:ciphertext});
+        response.b.push(content);
+        response.b.push(ciphertext);
       }
       $.ajax({
         type: "PUT",
