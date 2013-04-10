@@ -22,7 +22,9 @@ def content_genterator(s):
                     [string.ascii_letters for _ in range(count)])
         try:
             while True:
-                yield ''.join(gen.next())
+                s = ''.join(gen.next())
+                if s not in md5:
+                    yield s
         except StopIteration:
             pass
         
